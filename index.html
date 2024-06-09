@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            padding: 10px 15px;
+        }
+        .results img {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Stock Prediction</h1>
+        <form id="stockForm">
+            <div class="form-group">
+                <label for="stockSymbols">Enter stock symbols (comma separated):</label>
+                <input type="text" id="stockSymbols" name="stocks" required>
+            </div>
+            <div class="form-group">
+                <label for="days">Number of days to predict:</label>
+                <input type="number" id="days" name="days" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Predict</button>
+            </div>
+        </form>
+        <div id="results" class="results"></div>
+    </div>
+    <script>
+        document.getElementById('stockForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const stocks = document.getElementById('stockSymbols').value.split(',').map(s => s.trim());
+            const days = document.getElementById('days').value;
+            
+            fetch('/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ stocks, days }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
+                data.forEach(result => {
+                    const stockDiv = document.createElement('div');
+                    stockDiv.innerHTML = `<h2>${result.symbol}</h2><img src="data:image/png;base64,${result.plot_url}" />`;
+                    resultsDiv.appendChild(stockDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
